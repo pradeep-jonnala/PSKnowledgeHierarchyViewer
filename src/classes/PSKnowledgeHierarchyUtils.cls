@@ -22,8 +22,7 @@ public class PSKnowledgeHierarchyUtils {
             objType.add('KnowledgeArticleVersion');
             describeCategoryResult = Schema.describeDataCategoryGroups(objType);
 
-            //Creating a list of pair objects to use as a parameter
-            //for the describe call
+            //Creating a list of pair objects to use as a parameter for the describe call
             List<DataCategoryGroupSobjectTypePair> pairs = new List<DataCategoryGroupSobjectTypePair>();
 
             //Looping through the first describe result to create
