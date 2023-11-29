@@ -51,9 +51,11 @@ export default class PsKnowledgeHierarchyViewer extends LightningElement {
   @track selected = '';
   @track draftValues = [];
   @track showSpinner = false;
+  selectedNode;
   searchStr;
   groupName;
   category;
+  categories = [];
 
   connectedCallback () {
     var self = this;
@@ -80,15 +82,23 @@ export default class PsKnowledgeHierarchyViewer extends LightningElement {
 
   handleSelect (event) {
     var self = this;
-
+    this.categories = [];
     this.selected = event.detail.name;
     var params = event.detail.name.split ('::');
     this.groupName = params[0];
     this.category = params[1];
-
+    const findNode = (nodeList, name) =>
+      nodeList.find((node) => node.name === name) ||
+      nodeList.reduce(
+        (p, v) => p || (v.items && findNode(v.items, name)),
+        null
+      );
+    this.selectedNode = findNode(this.treeList, event.detail.name);
+    this.collectAllChildNodes(this.selectedNode);
+    this.categories.push(this.category);
     self.showSpinner = true;
 
-    getArticles ({groupName: this.groupName, category: this.category})
+    getArticles ({groupName: this.groupName, categories: this.categories})
       .then (result => {
         console.log ('articles=' + result);
         self.showSpinner = false;
@@ -97,6 +107,21 @@ export default class PsKnowledgeHierarchyViewer extends LightningElement {
       .catch (error => {
         self.handleError (error);
       });
+  }
+
+  collectAllChildNodes(root){
+    let allChilds = [];
+    let traverse = node => {
+      if (node.items && node.items.length > 0){
+        node.items.forEach((element) => {
+          allChilds.push(element);
+          traverse(element);
+          this.categories.push(element.name.split('::')[1]);
+        });
+      }
+    };
+
+    traverse(root);
   }
 
   saveArticles (result) {

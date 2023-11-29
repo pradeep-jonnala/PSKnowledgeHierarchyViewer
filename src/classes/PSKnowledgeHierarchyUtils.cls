@@ -101,13 +101,13 @@ public class PSKnowledgeHierarchyUtils {
     }
 
     @AuraEnabled
-    public static String getKnowledgeArticles(String groupName, String category)
+    public static String getKnowledgeArticles(String groupName, List<String> categories)
     {
         List<Knowledge__kav> kaList;
 
         try {
 
-            if (groupName == null || category == null)
+            if (groupName == null || categories.size() == 0)
             {
                 ////////////////////////////////////////////////////////////////////////
                 // get ka id list of all articles that have data category assignments //
@@ -139,7 +139,9 @@ public class PSKnowledgeHierarchyUtils {
                                FROM Knowledge__DataCategorySelection];
                 for (Knowledge__DataCategorySelection dsc : dcsList)
                 {
-                    if (dsc.DataCategoryGroupName == groupName && dsc.DataCategoryName == category)
+                    if(categories.size() == 1 && groupName == categories[0] && dsc.DataCategoryGroupName == groupName){
+                        dscIdList.add(dsc.ParentId);
+                    }else if (dsc.DataCategoryGroupName == groupName && categories.contains( dsc.DataCategoryName ))
                     {
                         dscIdList.add(dsc.ParentId);
                     }
@@ -158,7 +160,7 @@ public class PSKnowledgeHierarchyUtils {
 
             System.debug('kaList=' + JSON.serializePretty(kaList));
             //return JSON.serialize(kaList);
-            return convertKAList(kaList, groupName, category);
+            return convertKAList(kaList, groupName, categories);
         } catch (Exception e) {
             throw new  AuraHandledException(e.getTypeName() + ' - ' + e.getMessage() + ' [Line: ' + e.getLineNumber() + ']');
         }
@@ -214,7 +216,7 @@ public class PSKnowledgeHierarchyUtils {
         }
     }
 
-    private static String convertKAList(List<Knowledge__kav> kaList, String groupName, String category)
+    private static String convertKAList(List<Knowledge__kav> kaList, String groupName, List<String> category)
     {
         Map<String, Integer> orderMap = new Map<String, Integer>();
 
@@ -222,11 +224,11 @@ public class PSKnowledgeHierarchyUtils {
         System.debug('convertKAList category=' + category);
 
         if (groupName == null || groupName.length() == 0 || groupName == 'NO_CATEGORY') groupName = '-';
-        if (category == null || category.length() == 0) category = '-';
+        if (category == null || category.size() == 0) category = new list<String>{'-'};
 
         for (KA_Hierarchy_Order__c ho : [SELECT KA_Id__c, Order__c
                                                 FROM KA_Hierarchy_Order__c
-                                                WHERE Group_Name__c = :groupName AND Category__c = :category])
+                                                WHERE Group_Name__c = :groupName AND Category__c IN :category])
         {
             orderMap.put(ho.KA_Id__c, ho.Order__c.intValue());
         }
@@ -259,31 +261,7 @@ public class PSKnowledgeHierarchyUtils {
 
     private static String genPrefix(Integer lvl)
     {
-        if (lvl == 0)
-        {
-            return '';
-        } else if (lvl == 1)
-        {
-            return ' > ';
-        } else if (lvl == 2)
-        {
-            return '  >> ';
-        } else if (lvl == 3)
-        {
-            return '  >>> ';
-        } else if (lvl == 4)
-        {
-            return '  >>>> ';
-        } else if (lvl == 5)
-        {
-            return '  >>>>> ';
-        } else if (lvl == 6)
-        {
-            return '  >>>>>> ';
-        }
-        else {
-            return '  >>>>>>> ';
-        }
+        return '>'.repeat(lvl);
     }
 
     private static DataCategory[] getAllCategories(DataCategory [] categories)
