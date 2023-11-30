@@ -256,7 +256,8 @@ private class PSKnowledgeHierarchyUtilsTest {
             System.assertEquals(1, orderList[0].Order__c);
         }
     }
-    
+
+    @isTest
     private static void addItemTest(){
         Test.startTest();
         PSKnowledgeHierarchyUtils.Item iNew = new PSKnowledgeHierarchyUtils.Item('TEST', 'TEST');
