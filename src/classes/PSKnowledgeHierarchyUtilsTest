@@ -110,7 +110,7 @@ private class PSKnowledgeHierarchyUtilsTest {
         populateLocalVariables();
         // Test case for getKnowledgeArticles method
         Test.startTest();
-        String articles1 = PSKnowledgeHierarchyUtils.getKnowledgeArticles(categoryName, groupNames[0]);
+        String articles1 = PSKnowledgeHierarchyUtils.getKnowledgeArticles(categoryName, groupNames);
         String articles2 = PSKnowledgeHierarchyUtils.getKnowledgeArticles(null, null);
         Test.stopTest();
         System.assertNotEquals(null, articles1);
@@ -255,6 +255,14 @@ private class PSKnowledgeHierarchyUtilsTest {
             System.assertEquals(articles[0].Id, orderList[0].KA_Id__c);
             System.assertEquals(1, orderList[0].Order__c);
         }
+    }
+
+    @isTest
+    private static void addItemTest(){
+        Test.startTest();
+        PSKnowledgeHierarchyUtils.Item iNew = new PSKnowledgeHierarchyUtils.Item('TEST', 'TEST');
+        iNew.addItem('TEST', 'TEST');
+        Test.stopTest();
     }
     
     private static void populateLocalVariables() {
